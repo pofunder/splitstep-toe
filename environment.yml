@@ -1,0 +1,8 @@
+name: toe-env
+dependencies:
+  - python=3.10
+  - numpy
+  - scipy
+  - numba
+  - matplotlib
+  - jupyter
