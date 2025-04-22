@@ -1,13 +1,16 @@
 
 import numba as nb
-import numpy as np
+from .laplacian import laplacian_2d
 
 @nb.njit
-def step(R_prev, R_curr, kappa, lam, gamma, laplacian, G):
-    """One recursion step given prev & curr arrays (in-place)."""
-    # R_next = R_curr + kappa*laplacian(R_curr)+lam*G(R_curr)+gamma*(R_curr-R_prev)
-    R_next = np.empty_like(R_curr)
-    for i in range(R_curr.size):
-        R_next[i] = (R_curr[i] + kappa*laplacian(R_curr, i)
-                     + lam*G(R_curr[i]) + gamma*(R_curr[i]-R_prev[i]))
-    return R_next
+def _nonlin(x):
+    return x**3          # cubic self‑interaction
+
+@nb.njit
+def step_2d(R_prev, R_curr, kappa, lam, gamma, h):
+    """
+    One recursion step in 2‑D:
+        Rⁿ⁺¹ = Rⁿ + κ∇²Rⁿ − λ Rⁿ³ + γ(Rⁿ − Rⁿ⁻¹)
+    """
+    L = laplacian_2d(R_curr, h)
+    return R_curr + kappa*L - lam*_nonlin(R_curr) + gamma*(R_curr - R_prev)
