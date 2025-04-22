@@ -35,6 +35,10 @@ def integrate_photon(
     path    : None          – placeholder
     """
     # Weak‑field deflection Δφ = 4 rs / b
-    delta_phi = 4.0 * rs / b
-    phi_fin   = math.pi / 2.0 + delta_phi / 2.0  # symmetric trajectory
+   
+    delta_phi = 4.0 * rs / b          # weak‑field deflection
+    # Symmetric trajectory: φ starts at 0, reaches closest approach at π/2,
+    # then emerges at π − Δφ.  Halfway angle ⇒ π/2 − Δφ/2.
+    phi_fin   = math.pi / 2.0 - delta_phi / 2.0
+# symmetric trajectory
     return [r0], phi_fin, None
