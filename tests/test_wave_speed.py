@@ -3,6 +3,7 @@ pytest.skip("Pulse‑speed benchmark needs bigger grid; skipped in CI",
             allow_module_level=True)
 
 
+
 import numpy as np
 from splitstep_toe.core.engine import step_2d
 
