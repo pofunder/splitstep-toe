@@ -21,3 +21,6 @@ def step_2d(R_prev: np.ndarray,
              - (1 - lam) * R_prev \
              + kappa * lap
     return R_next
+
+
+

@@ -1,8 +1,10 @@
 
+
 import numpy as np
 from splitstep_toe.core.engine import step_2d
 
 def test_pulse_speed():
+
     ny=nx=31; h=1.0
     R0=np.zeros((ny,nx)); R0[ny//2,nx//2]=1.0
     R1=R0.copy()
