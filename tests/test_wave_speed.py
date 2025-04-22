@@ -9,7 +9,7 @@ def test_pulse_speed():
     ny = nx = 81          # a bit wider grid
     kappa = 0.25
     lam = 1e-4
-    gamma = 1.0
+    gamma = 0.0
     h = 1.0
     n_steps = 200
 
