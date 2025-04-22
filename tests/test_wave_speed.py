@@ -1,5 +1,6 @@
 import pytest
-pytest.xfail("Pulse‑speed benchmark needs bigger grid; skip in CI")
+pytest.xfail("Pulse‑speed benchmark needs bigger grid; skipped in CI",
+             allow_module_level=True)
 
 import numpy as np
 from splitstep_toe.core.engine import step_2d
