@@ -1,20 +1,22 @@
-import numba as nb
+"""Finite‑difference 2‑D Laplacian (5‑point stencil, Dirichlet BC)."""
+
 import numpy as np
 
-@nb.njit
-def laplacian_2d(field, h):
+__all__ = ["laplacian_2d"]
+
+
+def laplacian_2d(u: np.ndarray, h: float = 1.0) -> np.ndarray:
+    """Return ∇²u for a 2‑D array *u* using a 5‑point stencil.
+
+    The boundary is forced to zero (Dirichlet).  Grid spacing *h*.
     """
-    Five‑point stencil Laplacian on a 2‑D array.
-    Dirichlet boundary (edges set to zero).
-    """
-    ny, nx = field.shape
-    out = np.empty_like(field)
-    for j in range(1, ny - 1):
-        for i in range(1, nx - 1):
-            out[j, i] = (
-                field[j+1, i] + field[j-1, i] +
-                field[j, i+1] + field[j, i-1] -
-                4.0 * field[j, i]
-            ) / (h * h)
-    out[0, :] = out[-1, :] = out[:, 0] = out[:, -1] = 0.0
-    return out
+    lap = (
+        -4.0 * u
+        + np.roll(u,  1, 0) + np.roll(u, -1, 0)
+        + np.roll(u,  1, 1) + np.roll(u, -1, 1)
+    ) / (h * h)
+
+    # keep the boundaries zero so the wrap‑around rolls don’t leak in
+    lap[0, :] = lap[-1, :] = lap[:, 0] = lap[:, -1] = 0.0
+    return lap
+

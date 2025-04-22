@@ -1,16 +1,26 @@
-
-import numba as nb
+import numpy as np
 from .laplacian import laplacian_2d
 
-@nb.njit
-def _nonlin(x):
-    return x**3          # cubic self‑interaction
+__all__ = ["step_2d"]
 
-@nb.njit
-def step_2d(R_prev, R_curr, kappa, lam, gamma, h):
+def step_2d(R_prev: np.ndarray,
+            R_curr: np.ndarray,
+            kappa: float,
+            lam: float,
+            gamma: float,
+            h: float) -> np.ndarray:
     """
-    One recursion step in 2‑D:
-        Rⁿ⁺¹ = Rⁿ + κ∇²Rⁿ − λ Rⁿ³ + γ(Rⁿ − Rⁿ⁻¹)
+    One explicit split‑step of the 2‑D diffusion‑wave equation used
+    in the wave‑speed benchmark.
+
+    R_prev, R_curr : 2‑D arrays (previous two time‑levels)
+    Returns the next field array (same shape).
     """
-    L = laplacian_2d(R_curr, h)
-    return R_curr + kappa*L - lam*_nonlin(R_curr) + gamma*(R_curr - R_prev)
+    lap = laplacian_2d(R_curr, h)
+    R_next = (2 + lam - gamma) * R_curr \
+             - (1 - lam) * R_prev \
+             + kappa * lap
+    return R_next
+
+
+
