@@ -22,6 +22,7 @@ dependencies = [
 test = [
     "pytest>=7.0",
     "pytest-cov",
+    "toml<br>pandas = ">=2.0"<br>,
 ]
 
 # used by notebook-execution step
