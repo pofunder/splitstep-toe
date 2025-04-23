@@ -7,4 +7,6 @@ Currently:
 from .anomaly import anomaly_cancelled
 
 __all__ = ["anomaly_cancelled"]
+from .anomaly import anomaly_sums   # noqa: F401
+
 
