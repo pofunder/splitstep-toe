@@ -16,3 +16,11 @@ jobs:
         pip install pytest
     - name: Test
       run: pytest -q
+    - name: Execute notebooks
+      run: |
+        pip install jupyter nbconvert matplotlib
+        for nb in notebooks/*.ipynb; do
+            jupyter nbconvert --to notebook --execute "$nb" \
+                --ExecutePreprocessor.timeout=600 --output /dev/null
+          done
+
