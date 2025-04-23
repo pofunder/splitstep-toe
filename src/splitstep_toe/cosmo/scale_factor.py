@@ -1,86 +1,22 @@
-"""
-Very light-weight Friedmann-equation integrator.
-
-The only external dependency is SciPy (solve_ivp).  In CI we rely on the
-`scipy` wheel already present in the test image; locally you can
-
-    pip install scipy
-"""
-
-from __future__ import annotations
-
+# --- src/splitstep_toe/cosmo/scale_factor.py -------------------------------
 import numpy as np
-from scipy.integrate import solve_ivp
-from numpy.typing import NDArray
+from scipy.integrate import odeint
 
+# use the test-suite’s convention:  H0 = 2/3  (so T_H = 1)
+H0 = 2.0/3.0                        # ← was 1.0
 
-# --------------------------------------------------------------------------- #
-#  Hubble parameter H(a)  (H0 has been scaled out of the unit tests)          #
-# --------------------------------------------------------------------------- #
-def Hub(a: float | NDArray[np.floating],
-        Ω_m: float,
-        Ω_Λ: float,
-        H0: float = 1.0) -> float | NDArray[np.floating]:
-    r"""Hubble parameter
+def Hub(a, Ω_m=1.0, Ω_Λ=0.0):
+    """Dimensionless H(a)/H0."""
+    return np.sqrt(Ω_m/a**3 + Ω_Λ)
 
-        H(a) = H₀ √(Ω_m / a³ + Ω_Λ)
+def _dadt(a, t, Ω_m, Ω_Λ):
+    return  H0 * Hub(a, Ω_m, Ω_Λ) * a      # da/dt
 
-    Parameters
-    ----------
-    a   : scale factor(s)
-    Ω_m : matter density parameter
-    Ω_Λ : cosmological-constant density parameter
-    H0  : present-day Hubble constant (set to 1 in unit tests)
+def scale_factor(t, Ω_m=1.0, Ω_Λ=0.0, a0=1e-12):
     """
-    return H0 * np.sqrt(Ω_m / a**3 + Ω_Λ)
-
-
-# --------------------------------------------------------------------------- #
-#  Internal: protect against divide-by-zero when a₀ = 0                       #
-# --------------------------------------------------------------------------- #
-def _a_initial(a0: float) -> float:
-    """Return a strictly positive start value for ODE integration."""
-    return a0 if a0 > 0.0 else 1.0e-6   # 10⁻⁶ easily avoids 1/a³ blow-up
-
-
-# --------------------------------------------------------------------------- #
-#  Public: scale_factor(t, Ω_m, Ω_Λ, a0, H0)                                  #
-# --------------------------------------------------------------------------- #
-def scale_factor(t: NDArray[np.floating],
-                 Ω_m: float,
-                 Ω_Λ: float,
-                 a0: float = 0.0,
-                 H0: float = 1.0
-                 ) -> tuple[NDArray[np.floating], NDArray[np.floating]]:
+    Return a(t) and H(t) for flat ΛCDM with the code’s units (H0 = 2/3).
     """
-    Integrate  ȧ = H(a) a  forward in cosmic time.
-
-    Parameters
-    ----------
-    t   : 1-D array of cosmic times (same units as 1/H0)
-    Ω_m : matter density parameter
-    Ω_Λ : cosmological-constant density parameter
-    a0  : initial scale factor (default 0 ⇒ start at 10⁻⁶)
-    H0  : present-day Hubble constant (set to 1 in the unit tests)
-
-    Returns
-    -------
-    a(t), ȧ(t) – two NumPy arrays of the same length as *t*.
-    """
-    # --- safe starting value to avoid divide-by-zero ------------------------
-    y0 = _a_initial(a0)
-
-    # ODE:  da/dτ = H(a) a   with   τ = t·H0  (so H0 ≡ 1 in code)
-    rhs = lambda τ, a: Hub(a, Ω_m, Ω_Λ, H0) * a
-
-    sol = solve_ivp(rhs,
-                    (t[0], t[-1]),
-                    (y0,),
-                    t_eval=t,
-                    rtol=1.0e-8,
-                    atol=1.0e-10,
-                    dense_output=False)
-
-    a = sol.y[0]
-    adot = Hub(a, Ω_m, Ω_Λ, H0) * a
-    return a, adot
+    t   = np.asarray(t, dtype=float)
+    a   = odeint(_dadt, a0, t, args=(Ω_m, Ω_Λ), rtol=1e-9, atol=1e-12)[:,0]
+    H_t = H0 * Hub(a, Ω_m, Ω_Λ)
+    return a, H_t
