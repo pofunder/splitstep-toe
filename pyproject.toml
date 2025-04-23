@@ -1,3 +1,4 @@
+# ------ pyproject.toml (put in repo root) -----------------
 [build-system]
 requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
@@ -5,21 +6,27 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "splitstep_toe"
 version = "0.0.1"
-description = "Recursive split-step Theory-of-Everything: code + demos"
-authors = [{name = "pofunder"}]
+description = "Recursive split-step Theory-of-Everything demos"
 readme = "README.md"
 requires-python = ">=3.10"
+authors = [{name = "pofunder"}]
 dependencies = [
-  "numpy",
-  "scipy",
-  "numba",
+    "numpy",
+    "scipy",
+    "numba",
 ]
 
 [project.optional-dependencies]
+
+# used by GitHub Actions step “Install package + test extras”
 test = [
-  "pytest>=8",
-  "pytest-cov",
-  "nbconvert>=7",
-  "jupyter",
-  "matplotlib>=3.8",
+    "pytest>=7.0",
+    "pytest-cov",
+]
+
+# used by notebook-execution step
+notebook = [
+    "jupyter",      # includes notebook, jupyter_client, etc.
+    "nbconvert",    # executes & converts notebooks
+    "matplotlib",   # plotting inside demos
 ]
