@@ -14,43 +14,30 @@ def leapfrog_step(x: np.ndarray,
                   v: np.ndarray,
                   dt: float) -> tuple[np.ndarray, np.ndarray]:
     """
-    One Leapfrog (velocity-Verlet) step for two equal-mass bodies.
-
-    Parameters
-    ----------
-    x  : ndarray, shape (2, 3)
-         Cartesian positions of the two bodies
-    v  : ndarray, shape (2, 3)
-         Cartesian velocities
-    dt : float
-         timestep
-
-    Returns
-    -------
-    x_new, v_new : updated positions & velocities
+    Velocity-Verlet integrator for two equal-mass particles, G = 1, m = 1.
     """
-    # acceleration on body 0 from body 1  (and opposite for body 1)
+    # acceleration on body 0 (toward body 1)
     r_vec = x[1] - x[0]
     r     = np.linalg.norm(r_vec)
-    a     = -r_vec / r**3                  # G = m₁ = m₂ = 1
+    a     =  r_vec / r**3                    #  + toward body 1
 
-    # half-kick
+    # ---------- half - kick ---------------------------------------------
     v_half      = v.copy()
-    v_half[0]  -= 0.5 * dt * a
-    v_half[1]  += 0.5 * dt * a
+    v_half[0]  += 0.5 * dt * a               # body 0 toward body 1
+    v_half[1]  -= 0.5 * dt * a               # body 1 toward body 0
 
-    # drift
+    # ---------- drift ----------------------------------------------------
     x_new = x + dt * v_half
 
-    # new acceleration
+    # ---------- compute new acceleration ---------------------------------
     r_vec_new = x_new[1] - x_new[0]
     r_new     = np.linalg.norm(r_vec_new)
     a_new     = r_vec_new / r_new**3
 
-    # second half-kick
+    # ---------- second half-kick -----------------------------------------
     v_new      = v_half.copy()
-    v_new[0]  -= 0.5 * dt * a_new
-    v_new[1]  += 0.5 * dt * a_new
+    v_new[0]  += 0.5 * dt * a_new
+    v_new[1]  -= 0.5 * dt * a_new
 
     return x_new, v_new
 
