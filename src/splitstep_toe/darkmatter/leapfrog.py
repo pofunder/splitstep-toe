@@ -44,6 +44,14 @@ def leapfrog_step(x: np.ndarray,
 # ---------------------------------------------------------------------- #
 def demo_two_body(n_steps: int = 1_000,
                   dt: float = 1e-3) -> np.ndarray:
+                     x = np.array([[-0.5, 0, 0],
+               [ 0.5, 0, 0]], dtype=float)
+-v = np.array([[ 0,  0.5, 0],
+-              [ 0, -0.5, 0]], dtype=float)
++v_circ = 1.0 / np.sqrt(2.0)          # circular velocity at R=1 (G=M=1)
++v = np.array([[ 0,  v_circ, 0],
++              [ 0, -v_circ, 0]], dtype=float)
+
     """
     Evolve two equal-mass halos; return their separation vs time.
 
