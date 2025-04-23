@@ -13,3 +13,7 @@ __all__ = [
     "schwarzschild_f",
     "integrate_photon",
 ]
+from .geodesic import integrate_photon
+
+__all__ = ["integrate_photon"]
+
