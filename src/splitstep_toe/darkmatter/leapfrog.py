@@ -1,69 +1,81 @@
 """
 Ultra-simplified two-body Leapfrog integrator
-(units G = 1, masses m1 = m2 = 1)
+(units G = 1, masses m₁ = m₂ = 1).
 """
+
 from __future__ import annotations
 import numpy as np
 
+
+# --------------------------------------------------------------------- #
+# 1. Velocity-Verlet step                                               #
+# --------------------------------------------------------------------- #
 def leapfrog_step(x: np.ndarray,
                   v: np.ndarray,
                   dt: float) -> tuple[np.ndarray, np.ndarray]:
     """
-    One velocity-Verlet step for two bodies in 3-D.
+    One Leapfrog (velocity-Verlet) step for two equal-mass bodies.
 
     Parameters
     ----------
-    x  (2,3) array – positions
-    v  (2,3) array – velocities
-    dt float        – timestep
+    x  : ndarray, shape (2, 3)
+         Cartesian positions of the two bodies
+    v  : ndarray, shape (2, 3)
+         Cartesian velocities
+    dt : float
+         timestep
 
     Returns
     -------
-    x_new, v_new : updated arrays
+    x_new, v_new : updated positions & velocities
     """
+    # acceleration on body 0 from body 1  (and opposite for body 1)
     r_vec = x[1] - x[0]
     r     = np.linalg.norm(r_vec)
-    a     = r_vec / r**3                          # accel on m1 (m2 opposite)
+    a     = r_vec / r**3                  # G = m₁ = m₂ = 1
 
-    v_half     = v.copy()
-    v_half[0] -= 0.5 * dt * a
-    v_half[1] += 0.5 * dt * a
+    # half-kick
+    v_half      = v.copy()
+    v_half[0]  -= 0.5 * dt * a
+    v_half[1]  += 0.5 * dt * a
 
+    # drift
     x_new = x + dt * v_half
 
+    # new acceleration
     r_vec_new = x_new[1] - x_new[0]
     r_new     = np.linalg.norm(r_vec_new)
     a_new     = r_vec_new / r_new**3
 
-    v_new     = v_half.copy()
-    v_new[0] -= 0.5 * dt * a_new
-    v_new[1] += 0.5 * dt * a_new
+    # second half-kick
+    v_new      = v_half.copy()
+    v_new[0]  -= 0.5 * dt * a_new
+    v_new[1]  += 0.5 * dt * a_new
 
     return x_new, v_new
 
-# ---------------------------------------------------------------------- #
+
+# --------------------------------------------------------------------- #
+# 2. Demo function used by the test                                     #
+# --------------------------------------------------------------------- #
 def demo_two_body(n_steps: int = 1_000,
-                  dt: float = 1e-3) -> np.ndarray:
-                     x = np.array([[-0.5, 0, 0],
-               [ 0.5, 0, 0]], dtype=float)
--v = np.array([[ 0,  0.5, 0],
--              [ 0, -0.5, 0]], dtype=float)
-+v_circ = 1.0 / np.sqrt(2.0)          # circular velocity at R=1 (G=M=1)
-+v = np.array([[ 0,  v_circ, 0],
-+              [ 0, -v_circ, 0]], dtype=float)
-
+                  dt: float = 2e-3) -> np.ndarray:
     """
-    Evolve two equal-mass halos; return their separation vs time.
+    Run a two-body orbit and return separation vs time.
 
-    Starts with R = 1, v_tangential = 0.5 circularish.
+    Starts at separation R = 1 with the circular velocity
+        v_circ = √(G M / (4 R))  →  1/√2  in our units.
     """
-    x = np.array([[-0.5, 0, 0],
-                  [ 0.5, 0, 0]], dtype=float)
-    v = np.array([[ 0,  0.5, 0],
-                  [ 0, -0.5, 0]], dtype=float)
+    x = np.array([[-0.5, 0.0, 0.0],
+                  [ 0.5, 0.0, 0.0]], dtype=float)
+
+    v_circ = 1.0 / np.sqrt(2.0)           # circular speed at R = 1
+    v = np.array([[ 0.0,  v_circ, 0.0],
+                  [ 0.0, -v_circ, 0.0]], dtype=float)
 
     sep = np.empty(n_steps)
     for i in range(n_steps):
         x, v = leapfrog_step(x, v, dt)
         sep[i] = np.linalg.norm(x[1] - x[0])
+
     return sep
