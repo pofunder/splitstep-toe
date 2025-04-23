@@ -1,36 +1,31 @@
 """
-Electroweak symmetry breaking toy formulas.
-
-We work in the SM tree-level potential
-    V = μ² φ†φ + λ (φ†φ)²
-with convention μ² < 0, λ > 0.
-
-Given the physical Higgs mass m_H and vev v we can solve for
-λ and μ².  Units: GeV.
+Tree-level Higgs potential utilities
+V(φ) = − μ² |φ|² + λ |φ|⁴
 """
 
+from __future__ import annotations
 import math
-from typing import Tuple
 
-# electroweak vacuum expectation value (G_F → v)
-HIGGS_VEV = 246.22  # GeV   (PDG 2024)
-
-def higgs_vev() -> float:
-    """Return the Higgs VEV v ≃ 246 GeV."""
-    return HIGGS_VEV
+_VEV = 246.22  # GeV  (PDG central value)
 
 
-def lam_mu2_from_mh(m_h: float, v: float = HIGGS_VEV) -> Tuple[float, float]:
+def lam_mu2_from_mh(m_h: float = 125.0, v: float = _VEV) -> tuple[float, float]:
     """
-    Solve λ and μ² from the physical mass.
+    Solve λ and μ² from the physical Higgs mass (tree level).
 
-    m_H² = 2 λ v² ,     μ² = -λ v²
+    Returns (λ, μ²) such that:
+        m_h² = 2 λ v²   and   μ² = λ v²
     """
     lam = m_h**2 / (2 * v**2)
-    mu2 = -lam * v**2
+    mu2 = m_h**2 / 2.0
     return lam, mu2
 
 
-def higgs_mass(lam: float, v: float = HIGGS_VEV) -> float:
-    """Return m_H for given λ and v (tree-level)."""
-    return math.sqrt(2 * lam * v**2)
+def higgs_mass(lam: float, v: float = _VEV) -> float:
+    """Invert the above: m_h from a given λ and v."""
+    return math.sqrt(2 * lam) * v
+
+
+def higgs_vev() -> float:
+    """Reference vev used by unit tests."""
+    return _VEV
