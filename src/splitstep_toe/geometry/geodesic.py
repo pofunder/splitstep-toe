@@ -36,7 +36,7 @@ def _rhs(y: np.ndarray, rs: float, L: float) -> np.ndarray:
     r, phi, pr = y                    # y = (r, φ, p_r)
     dr   = pr
     dphi = L / r**2
-    dpr  = L**2 * (1.0 / r**3 - 1.5 * rs / r**4)
+    dpr  = L**2 * (1.0 / r**3 - 0.5 * rs / r**4)
     return np.array([dr, dphi, dpr])
 
 
