@@ -8,6 +8,7 @@ Currently:
 Gauge-theory helpers sub-package
 """
 
-from .anomaly import anomaly_sums, anomaly_cancelled  # noqa: F401
+from .anomaly import anomaly_sums, anomaly_cancelled  # re-export
+
 
 
