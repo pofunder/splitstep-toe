@@ -28,5 +28,6 @@ test = [
 notebook = [
     "jupyter",      # includes notebook, jupyter_client, etc.
     "nbconvert",    # executes & converts notebooks
-    "matplotlib",   # plotting inside demos
+    "matplotlib", 
+    "pandas", # plotting inside demos
 ]
