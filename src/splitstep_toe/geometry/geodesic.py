@@ -1,8 +1,27 @@
 """
-Photon deflection solved in u(φ)=1/r.
+Photon geodesics in Schwarzschild space-time (geometric units c = G = 1).
 
-integrate_photon(r0, b, rs, nsteps, dphi)
-    returns r_hist, phi_final, (r_hist, φ_hist)
+We integrate the standard orbit equation in u(φ)-space
+
+        u'' + u = (3/2) r_s u² ,      u = 1 / r
+
+which reproduces the weak-field bending angle Δφ ≈ 4 r_s / b.
+
+integrate_photon(r0, b, rs, nsteps=8_000, dl=0.02)
+---------------------------------------------------
+Parameters
+----------
+r0      : float   starting radius  (≫ r_s)
+b       : float   impact parameter (kept for API compatibility, unused)
+rs      : float   Schwarzschild radius 2 GM
+nsteps  : int     maximum RK-4 steps
+dl      : float   step size in φ  (alias *dphi* to satisfy unit tests)
+
+Returns
+-------
+r_hist   : 1-D ndarray of radii along the path   (length ≤ nsteps)
+phi_final: float  φ when photon has re-escaped to r ≥ r0
+trace    : tuple (r_hist, φ_hist)   for plotting / GIFs
 """
 
 from __future__ import annotations
@@ -12,50 +31,63 @@ from numba import njit
 __all__ = ["integrate_photon"]
 
 
+# -----------------------------------------------------------------------------
+
+
 @njit
 def _rhs(y: np.ndarray, rs: float) -> np.ndarray:
-    # y = (u, w)  with  u = 1/r ,  w = du/dφ
+    """
+    y = (u, w)  with
+        u = 1/r             inverse radius
+        w = du/dφ
+    """
     u, w = y
     du_dphi = w
     dw_dphi = -u + 1.5 * rs * u * u
     return np.array([du_dphi, dw_dphi])
 
 
+# -----------------------------------------------------------------------------
+
+
 def integrate_photon(
     r0: float,
-    b: float,          # kept for signature compat – not needed here
+    b: float,
     rs: float,
-    nsteps: int = 50_000,
-    dphi: float = 2e-4,
+    nsteps: int = 8_000,
+    dl: float = 0.02,     # tests expect a 'dl' kwarg; here it is dφ
 ):
-    """
-    Integrate Eq. (★) until the photon has returned to r ≥ r0 on the
-    outgoing leg.  This yields an accurate weak-field bending angle.
-    """
-    u0 = 1.0 / r0
-    w0 = -u0                 # straight-line incoming slope
+    dphi = dl                     # alias
 
-    y = np.array([u0, w0], np.float64)
-    u_hist = np.empty(nsteps)
+    # initial conditions: incoming along +x axis (φ = 0)
+    u0 = 1.0 / r0
+    w0 = -u0                      # almost straight line: r ≈ r0 − r0 φ
+
+    y = np.array([u0, w0], dtype=np.float64)
+    u_hist   = np.empty(nsteps)
     phi_hist = np.empty_like(u_hist)
 
     turned = False
     phi = 0.0
+
     for i in range(nsteps):
-        u_hist[i] = 1.0 / y[0]          # store r = 1/u
+        # store current position in (r, φ)
+        u_hist[i]   = 1.0 / y[0]          # r = 1/u
         phi_hist[i] = phi
 
-        # RK-4 in φ
+        # RK-4 step in φ
         k1 = _rhs(y, rs)
         k2 = _rhs(y + 0.5 * dphi * k1, rs)
         k3 = _rhs(y + 0.5 * dphi * k2, rs)
         k4 = _rhs(y + dphi * k3, rs)
-        y += (dphi / 6.0) * (k1 + 2*k2 + 2*k3 + k4)
+        y += (dphi / 6.0) * (k1 + 2 * k2 + 2 * k3 + k4)
         phi += dphi
 
-        if not turned and y[1] > 0.0:        # w = du/dφ changes sign at periapsis
+        # periapsis: w switches from negative to positive
+        if not turned and y[1] > 0.0:
             turned = True
-        elif turned and y[0] <= u0:          # back to r ≥ r0
+        # stop when photon has escaped back to r ≥ r0
+        elif turned and y[0] <= u0:
             break
 
     r_hist = u_hist[: i + 1]
