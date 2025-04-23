@@ -32,7 +32,7 @@ def leapfrog_step(x: np.ndarray,
     # acceleration on body 0 from body 1  (and opposite for body 1)
     r_vec = x[1] - x[0]
     r     = np.linalg.norm(r_vec)
-    a     = r_vec / r**3                  # G = m₁ = m₂ = 1
+    a     = -r_vec / r**3                  # G = m₁ = m₂ = 1
 
     # half-kick
     v_half      = v.copy()
