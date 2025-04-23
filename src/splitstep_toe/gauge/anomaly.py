@@ -1,42 +1,51 @@
 """
-SM gauge-anomaly bookkeeping.
+Gauge-anomaly bookkeeping for a single Standard-Model generation.
 
-We work with **left-handed Weyl fields**.  Each entry is
-(multiplicity = SU(2) × colour, hypercharge Y).
+The SM is free of all chiral gauge anomalies provided that both
+  Σ Y   = 0   and   Σ Y³ = 0
+when every left-handed Weyl fermion state is counted with its full
+multiplicity:  colour factor × SU(2) dimension.
 
-For N_gen = 3 the sums ΣY and ΣY³ both vanish ⇒ anomaly-free.
+Notation
+--------
+multiplicity =  (# colours) · (SU(2) dimension)
+Y  = U(1)_Y hyper-charge  (Q = T³ + Y)
+
+References
+----------
+* Peskin & Schroeder §20
+* arXiv:hep-ph/9507286
 """
 
 from __future__ import annotations
 
-import numpy as np
+# ──────────────────────────────────────────────────────────────────────────────
+# Hyper-charge table  (one generation, left-handed chiral fields only)
 
-# ─────────────────────────────────────────────────────────────────── constants
-_N_GEN = 3  # number of fermion generations
-
-# (multiplicity, hypercharge)
-_FIELDS: list[tuple[int, float]] = [
-    (2 * 3, +1 / 6),  # q_L   (doublet, colour)
-    (3, +2 / 3),  # u_R
-    (3, -1 / 3),  # d_R
-    (2, -1 / 2),  # l_L
-    (1, -1.0),  # e_R
+_SM_FIELD_LIST: list[tuple[int, float]] = [
+    (3 * 2, +1 / 6),   # q_L  : (u_L , d_L)   multiplicity 3 colours × 2 iso-comp.
+    (3,     +2 / 3),   # u_R  : up-type singlet
+    (3,     -1 / 3),   # d_R  : down-type singlet
+    (1 * 2, -1 / 2),   # ℓ_L  : (ν_L , e_L)
+    (1,     -1),       # e_R  : charged-lepton singlet
 ]
 
-# ─────────────────────────────────────────────────────────── public functions
-def anomaly_sums(n_gen: int = _N_GEN) -> tuple[float, float]:
+
+# ──────────────────────────────────────────────────────────────────────────────
+def anomaly_sums(n_gen: int = 3) -> tuple[float, float]:
     """
-    Return the hyper-charge gauge-anomaly sums (ΣY, ΣY³).
-
-    A vanishing pair (≈ 0) means the gauge group is anomaly-free.
+    Return Σ Y and Σ Y³ (including colour & SU(2) multiplicities) for *n_gen* families.
+    They must both vanish in a consistent gauge theory.
     """
-    mult, Y = np.array([m for m, _ in _FIELDS]), np.array([y for _, y in _FIELDS])
-    sum_Y = n_gen * (mult * Y).sum()
-    sum_Y3 = n_gen * (mult * Y**3).sum()
-    # strip tiny FP noise
-    return float(sum_Y), float(sum_Y3)
+    sum_Y = 0.0
+    sum_Y3 = 0.0
+    for mult, Y in _SM_FIELD_LIST:
+        sum_Y += n_gen * mult * Y
+        sum_Y3 += n_gen * mult * Y**3
+    return sum_Y, sum_Y3
 
 
-def anomaly_cancelled() -> bool:  # convenience one-liner used by tests
-    s1, s3 = anomaly_sums()
-    return abs(s1) < 1e-12 and abs(s3) < 1e-12
+def anomaly_cancelled(n_gen: int = 3) -> bool:
+    """Convenience boolean with a tight numerical tolerance."""
+    sY, sY3 = anomaly_sums(n_gen)
+    return abs(sY) < 1e-12 and abs(sY3) < 1e-12
