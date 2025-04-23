@@ -43,6 +43,6 @@ def laplacian_fft(f: np.ndarray, h: float = 1.0) -> np.ndarray:
         + kz[None, None, :] ** 2
     )
 
-    f_hat = rfftn(f, workers=-1)
+    f_hat = rfftn(f)
     lap_hat = -k2 * f_hat
-    return irfftn(lap_hat, s=f.shape, workers=-1).real
+    return irfftn(lap_hat, s=f.shape).real
