@@ -1,55 +1,63 @@
-[build-system]
-requires = ["setuptools>=68", "wheel"]
-build-backend = "setuptools.build_meta"
-
-[project]
-name = "splitstep-toe"
-version = "0.0.1"
-description = "Split-step Theory-of-Everything playground"
-requires-python = ">=3.9"
-license = { file = "LICENSE" }
+# -----------------------------  pyproject.toml  ------------------------------
 
 [build-system]
 requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
 
+# --------------------------------------------------------------------------- #
+#  Project metadata                                                           #
+# --------------------------------------------------------------------------- #
 [project]
-name = "splitstep-toe"
-version = "0.0.1"
-description = "Split-step Theory-of-Everything playground"
+name            = "splitstep-toe"
+dynamic         = ["version"]               # read from splitstep_toe/__init__.py
+description     = "Numerical sandbox for a (tongue-in-cheek) ‘Theory of Everything’"
+readme          = "README.md"
 requires-python = ">=3.9"
-license = { file = "LICENSE" }
-
-# ↓↓↓ NEW BLOCK ↓↓↓
-dependencies = [
-    # numerical core
-    "numpy>=1.23",
-    "scipy>=1.10",
-    "numba>=0.56",
+license         = {text = "MIT"}
+authors         = [{name = "You & ChatGPT", email = "noreply@example.org"}]
+classifiers     = [
+  "Programming Language :: Python :: 3",
+  "License :: OSI Approved :: MIT License",
+  "Intended Audience :: Science/Research",
+  "Topic :: Scientific/Engineering :: Physics",
 ]
 
-[project.urls]
-Homepage = "https://github.com/pofunder/splitstep-toe"
-
-[tool.setuptools.packages.find]
-include = ["splitstep_toe*"]
+dependencies = [
+  "numpy>=1.23",
+  "scipy>=1.12",
+  "numba>=0.61",
+]
 
 [project.optional-dependencies]
-test = [
-    "pytest",
-    "ruff~=0.4",
-    "black>=24",
-    "pandas>=2.0"
-]
-dev = [
-    "ipykernel",
-    "jupyterlab"
-]
+test      = ["pytest>=8.1", "pytest-xdist", "ruff", "black"]
+notebooks = ["matplotlib>=3.8", "pandas>=2.0", "jupyter", "nbconvert"]
 
+# --------------------------------------------------------------------------- #
+#  Setuptools package discovery                                               #
+# --------------------------------------------------------------------------- #
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.dynamic]
+version = {attr = "splitstep_toe.__version__"}
+
+# --------------------------------------------------------------------------- #
+#  Formatting & linting                                                       #
+# --------------------------------------------------------------------------- #
 [tool.black]
 line-length = 88
-skip-string-normalization = true
+target-version = ["py39", "py310"]
 
 [tool.ruff]
 line-length = 88
-extend-select = ["I", "E", "F"]
+target-version = "py310"
+select = ["E", "F", "I", "N", "NPY", "W"]
+ignore = ["E203", "W503"]
+
+# --------------------------------------------------------------------------- #
+#  Ruff (isort-like) import-sorting                                           #
+# --------------------------------------------------------------------------- #
+[tool.ruff.isort]
+profile = "black"
+
+# ---------------------------  end pyproject.toml  --------------------------- #
