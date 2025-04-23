@@ -1,30 +1,44 @@
 """
-Gauge-anomaly checker for the Standard Model.
-SM hypercharges are in units where Y = Q − T3.
+Standard-Model gauge-anomaly bookkeeping.
+
+We list the SM fermions (one generation) with their gauge
+quantum numbers and compute
+    Σ Q³  (hyper-charge cubic anomaly)
+    Σ Q   (mixed U(1)–gravitational anomaly)
+Both sums must vanish generation-by-generation → anomaly cancellation.
 """
 
+from dataclasses import dataclass
 from typing import List, Tuple
 
-# (name, electric charge Q, SU(2) doublet size)
-_FERMIONS: List[Tuple[str, float, int]] = [
-    # 3 colours of quarks × 3 families
-    ("u_L",  +2/3, 2), ("d_L", -1/3, 2),
-    ("u_R",  +2/3, 1), ("d_R", -1/3, 1),
+@dataclass(frozen=True)
+class Fermion:
+    name: str
+    Y: float   # weak hyper-charge
+    Nc: int    # colour multiplicity
+    chirality: str = "L"   # 'L' or 'R'
+
+
+# --- one generation ---------------------------------------------------------
+
+_fermions: List[Fermion] = [
+    # quarks
+    Fermion("q_L",  +1/6, 3, "L"),
+    Fermion("u_R",  +2/3, 3, "R"),
+    Fermion("d_R",  -1/3, 3, "R"),
     # leptons
-    ("e_L",  -1. , 2), ("ν_L",  0. , 2),
-    ("e_R",  -1. , 1),
+    Fermion("l_L",  -1/2, 1, "L"),
+    Fermion("e_R",  -1  , 1, "R"),
 ]
 
 def anomaly_sums() -> Tuple[float, float]:
-    """
-    Return (ΣQ, ΣQ³) over all SM fermions including colours.
-    Both must cancel (=0) for gauge consistency.
-    """
-    sum_Q   = 0.0
-    sum_Q3  = 0.0
-    nc = 3  # QCD colours
-    for name, Q, d2 in _FERMIONS:
-        factor = nc if "u_" in name or "d_" in name else 1
-        sum_Q  += factor * d2 * Q
-        sum_Q3 += factor * d2 * Q**3
-    return sum_Q, sum_Q3
+    """Return (Σ Y³, Σ Y) for one SM generation."""
+    sum_Y3 = sum(f.Nc * f.Y**3 for f in _fermions)
+    sum_Y  = sum(f.Nc * f.Y    for f in _fermions)
+    return sum_Y3, sum_Y
+
+
+# ---- convenience flag used by the tests ------------------------------------
+
+sum_Y3, sum_Y = anomaly_sums()
+anomaly_cancelled: bool = abs(sum_Y3) < 1e-12 and abs(sum_Y) < 1e-12
