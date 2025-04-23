@@ -2,25 +2,36 @@ name: CI
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, feat/**, fix/**, ci/** ]
   pull_request:
+    branches: [ main ]
 
 jobs:
   test:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v4
+    - name: Checkout code
+      uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.10"
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.10"   # repo uses 3.10
 
-      - name: Install package + test extras
-        run: |
-          python -m pip install --upgrade pip
-          python -m pip install ".[test]"
+    - name: Install package + test extras
+      run: |
+        python -m pip install --upgrade pip
+        python -m pip install -e ".[test]"
 
-      - name: Run unit tests
-        run: |
-          pytest -q
+    - name: Run unit tests
+      run: pytest -q
+
+    - name: Execute notebooks
+      env:
+        MPLBACKEND: Agg          # head-less PNG backend
+      run: |
+        # Make sure all figure output dirs exist
+        mkdir -p paper/figs
+        # Convert & execute every ipynb under notebooks/
+        jupyter nbconvert --to notebook --execute notebooks/*.ipynb --output /dev/null
