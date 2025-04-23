@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "splitstep_toe"
+version = "0.0.1"
+description = "Recursive split-step Theory-of-Everything: code + demos"
+authors = [{name = "pofunder"}]
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+  "numpy",
+  "scipy",
+  "numba",
+]
+
+[project.optional-dependencies]
+test = [
+  "pytest>=8",
+  "pytest-cov",
+  "nbconvert>=7",
+  "jupyter",
+  "matplotlib>=3.8",
+]
