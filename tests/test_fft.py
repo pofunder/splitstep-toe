@@ -1,21 +1,33 @@
+# tests/test_fft.py
+"""
+Accuracy test for the spectral 3-D Laplacian.
+
+We compare the FFT-based result to the *analytic* Laplacian of a smooth,
+periodic trigonometric field.  Because the field is infinitely
+differentiable and exactly band-limited on the grid, the FFT Laplacian
+should match to machine precision (‖error‖ / ‖true‖ < 1e-12).
+"""
+from __future__ import annotations
 import numpy as np
 from splitstep_toe.core.fft import laplacian_fft
-from splitstep_toe.core.laplacian import laplacian_2d  # existing FD stencil
 
-def finite_difference_3d(f, h=1.0):
-    """Second-order 3-D finite-difference Laplacian, periodic BC."""
-    lap = np.zeros_like(f)
-    for axis in range(3):
-        f_forward = np.roll(f, -1, axis)
-        f_back    = np.roll(f,  1, axis)
-        lap += (f_forward - 2 * f + f_back) / h**2
-    return lap
 
-def test_fft_laplacian_accuracy():
-    rng = np.random.default_rng(0)
-    f = rng.standard_normal((32, 32, 32))
-    lap_fd  = finite_difference_3d(f)
-    lap_fft = laplacian_fft(f)
-    rel_err = np.linalg.norm(lap_fft - lap_fd) / np.linalg.norm(lap_fd)
-    # Finite-difference is O(h²); on a 32³ grid h=1 so expect ~1e-2 error.
-    assert rel_err < 1e-2
+def test_fft_laplacian_against_analytic() -> None:
+    # --- build a smooth 3-D function with known Laplacian ------------------
+    nx = ny = nz = 32
+    L = 2 * np.pi               # domain length so that k is integer
+    h = L / nx                  # grid spacing (same in all directions)
+
+    x = np.linspace(0, L, nx, endpoint=False)
+    y = np.linspace(0, L, ny, endpoint=False)
+    z = np.linspace(0, L, nz, endpoint=False)
+    X, Y, Z = np.meshgrid(x, y, z, indexing="ij")
+
+    k1, k2, k3 = 2, 3, 5
+    f = np.sin(k1 * X) * np.sin(k2 * Y) * np.sin(k3 * Z)
+
+    lap_true = -(k1**2 + k2**2 + k3**2) * f      # analytic ∇²f
+    lap_fft  = laplacian_fft(f, h=h)
+
+    rel_err = np.linalg.norm(lap_fft - lap_true) / np.linalg.norm(lap_true)
+    assert rel_err < 1e-12
