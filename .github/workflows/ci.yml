@@ -27,11 +27,16 @@ jobs:
     - name: Run unit tests
       run: pytest -q
 
+      # Execute notebooks
+       # Execute notebooks
     - name: Execute notebooks
-      env:
-        MPLBACKEND: Agg          # head-less PNG backend
       run: |
-        # Make sure all figure output dirs exist
-        mkdir -p paper/figs
-        # Convert & execute every ipynb under notebooks/
-        jupyter nbconvert --to notebook --execute notebooks/*.ipynb --output /dev/null
+        set -e
+      # ➊ create output dirs so notebooks can save figures
+        mkdir -p paper/figs build/nb
+      # ➋ execute each notebook, drop the executed copy in build/nb/
+        for nb in notebooks/*.ipynb; do
+          jupyter-nbconvert \
+            --to notebook --execute "$nb" \
+            --output-dir build/nb      # <-- here
+        done
