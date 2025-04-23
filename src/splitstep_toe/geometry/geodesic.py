@@ -62,5 +62,5 @@ def integrate_photon(
             break
 
     r_hist = u_hist[: i + 1]
-    phi_final = phi_hist[i]
-    return r_hist, phi_final, (r_hist, phi_hist[: i + 1])
+    phi_final_lab = phi_hist[i] - np.pi / 2.0      # lab frame (tests expect this)
+    return r_hist, phi_final_lab, (r_hist, phi_hist[: i + 1] - np.pi / 2.0)
