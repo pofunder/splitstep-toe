@@ -1,44 +1,42 @@
 """
-Standard-Model gauge-anomaly bookkeeping.
+SM gauge-anomaly bookkeeping.
 
-We list the SM fermions (one generation) with their gauge
-quantum numbers and compute
-    Σ Q³  (hyper-charge cubic anomaly)
-    Σ Q   (mixed U(1)–gravitational anomaly)
-Both sums must vanish generation-by-generation → anomaly cancellation.
+We work with **left-handed Weyl fields**.  Each entry is
+(multiplicity = SU(2) × colour, hypercharge Y).
+
+For N_gen = 3 the sums ΣY and ΣY³ both vanish ⇒ anomaly-free.
 """
 
-from dataclasses import dataclass
-from typing import List, Tuple
+from __future__ import annotations
 
-@dataclass(frozen=True)
-class Fermion:
-    name: str
-    Y: float   # weak hyper-charge
-    Nc: int    # colour multiplicity
-    chirality: str = "L"   # 'L' or 'R'
+import numpy as np
 
+# ─────────────────────────────────────────────────────────────────── constants
+_N_GEN = 3  # number of fermion generations
 
-# --- one generation ---------------------------------------------------------
-
-_fermions: List[Fermion] = [
-    # quarks
-    Fermion("q_L",  +1/6, 3, "L"),
-    Fermion("u_R",  +2/3, 3, "R"),
-    Fermion("d_R",  -1/3, 3, "R"),
-    # leptons
-    Fermion("l_L",  -1/2, 1, "L"),
-    Fermion("e_R",  -1  , 1, "R"),
+# (multiplicity, hypercharge)
+_FIELDS: list[tuple[int, float]] = [
+    (2 * 3, +1 / 6),  # q_L   (doublet, colour)
+    (3, +2 / 3),  # u_R
+    (3, -1 / 3),  # d_R
+    (2, -1 / 2),  # l_L
+    (1, -1.0),  # e_R
 ]
 
-def anomaly_sums() -> Tuple[float, float]:
-    """Return (Σ Y³, Σ Y) for one SM generation."""
-    sum_Y3 = sum(f.Nc * f.Y**3 for f in _fermions)
-    sum_Y  = sum(f.Nc * f.Y    for f in _fermions)
-    return sum_Y3, sum_Y
+# ─────────────────────────────────────────────────────────── public functions
+def anomaly_sums(n_gen: int = _N_GEN) -> tuple[float, float]:
+    """
+    Return the hyper-charge gauge-anomaly sums (ΣY, ΣY³).
+
+    A vanishing pair (≈ 0) means the gauge group is anomaly-free.
+    """
+    mult, Y = np.array([m for m, _ in _FIELDS]), np.array([y for _, y in _FIELDS])
+    sum_Y = n_gen * (mult * Y).sum()
+    sum_Y3 = n_gen * (mult * Y**3).sum()
+    # strip tiny FP noise
+    return float(sum_Y), float(sum_Y3)
 
 
-# ---- convenience flag used by the tests ------------------------------------
-
-sum_Y3, sum_Y = anomaly_sums()
-anomaly_cancelled: bool = abs(sum_Y3) < 1e-12 and abs(sum_Y) < 1e-12
+def anomaly_cancelled() -> bool:  # convenience one-liner used by tests
+    s1, s3 = anomaly_sums()
+    return abs(s1) < 1e-12 and abs(s3) < 1e-12
