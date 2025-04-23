@@ -1,34 +1,36 @@
-# ------ pyproject.toml (put in repo root) -----------------
 [build-system]
-requires = ["setuptools>=61.0", "wheel"]
+requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "splitstep_toe"
+name = "splitstep-toe"
 version = "0.0.1"
-description = "Recursive split-step Theory-of-Everything demos"
-readme = "README.md"
-requires-python = ">=3.10"
-authors = [{name = "pofunder"}]
-dependencies = [
-    "numpy",
-    "scipy",
-    "numba",
-]
+description = "Split-step Theory-of-Everything playground"
+requires-python = ">=3.9"
+license = { file = "LICENSE" }
+
+[project.urls]
+Homepage = "https://github.com/pofunder/splitstep-toe"
+
+[tool.setuptools.packages.find]
+include = ["splitstep_toe*"]
 
 [project.optional-dependencies]
-
-# used by GitHub Actions step “Install package + test extras”
 test = [
-    "pytest>=7.0",
-    "pytest-cov",
-    "toml<br>pandas = ">=2.0"<br>,
+    "pytest",
+    "ruff~=0.4",
+    "black>=24",
+    "pandas>=2.0"
+]
+dev = [
+    "ipykernel",
+    "jupyterlab"
 ]
 
-# used by notebook-execution step
-notebook = [
-    "jupyter",      # includes notebook, jupyter_client, etc.
-    "nbconvert",    # executes & converts notebooks
-    "matplotlib", 
-    "pandas", # plotting inside demos
-]
+[tool.black]
+line-length = 88
+skip-string-normalization = true
+
+[tool.ruff]
+line-length = 88
+extend-select = ["I", "E", "F"]
