@@ -9,6 +9,25 @@ description = "Split-step Theory-of-Everything playground"
 requires-python = ">=3.9"
 license = { file = "LICENSE" }
 
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "splitstep-toe"
+version = "0.0.1"
+description = "Split-step Theory-of-Everything playground"
+requires-python = ">=3.9"
+license = { file = "LICENSE" }
+
+# ↓↓↓ NEW BLOCK ↓↓↓
+dependencies = [
+    # numerical core
+    "numpy>=1.23",
+    "scipy>=1.10",
+    "numba>=0.56",
+]
+
 [project.urls]
 Homepage = "https://github.com/pofunder/splitstep-toe"
 
