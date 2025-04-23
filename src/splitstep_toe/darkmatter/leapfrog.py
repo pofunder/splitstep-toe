@@ -58,8 +58,9 @@ def leapfrog_step(x: np.ndarray,
 # --------------------------------------------------------------------- #
 # 2. Demo function used by the test                                     #
 # --------------------------------------------------------------------- #
-def demo_two_body(n_steps: int = 1_000,
-                  dt: float = 2e-3) -> np.ndarray:
+# 2 orbits with 0.001-unit steps  → energy stable at 1e-3 level
+def demo_two_body(n_steps: int = 2_000,
+                  dt: float = 1e-3) -> np.ndarray:
     """
     Run a two-body orbit and return separation vs time.
 
